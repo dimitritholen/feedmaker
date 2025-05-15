@@ -1,5 +1,8 @@
+version: '3.8'
+
 services:
   web:
+    container_name: feedmaker-web
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,7 +18,8 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     command: >
       bash -c "mkdir -p /code/data &&
@@ -23,15 +27,38 @@ services:
                python manage.py migrate &&
                python manage.py collectstatic --noinput --clear &&
                gunicorn --bind :8000 --workers 2 --access-logfile - --preload feedmaker.wsgi"
+    networks:
+      - feedmaker-network
+    labels:
+      - "com.docker.compose.project=feedmaker"
+      - "com.docker.compose.service=web"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   redis:
+    container_name: feedmaker-redis
     image: redis:7-alpine
     restart: unless-stopped
     volumes:
       - redis_data:/data
     command: redis-server --save 60 1 --loglevel warning
+    networks:
+      - feedmaker-network
+    labels:
+      - "com.docker.compose.project=feedmaker"
+      - "com.docker.compose.service=redis"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   nginx:
+    container_name: feedmaker-nginx
     image: nginx:1.25-alpine
     ports:
       - "80:80"
@@ -43,10 +70,29 @@ services:
       - ./nginx/certbot/conf:/etc/letsencrypt
       - ./nginx/certbot/www:/var/www/certbot
     depends_on:
-      - web
+      web:
+        condition: service_healthy
     restart: unless-stopped
+    networks:
+      - feedmaker-network
+    labels:
+      - "com.docker.compose.project=feedmaker"
+      - "com.docker.compose.service=nginx"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  feedmaker-network:
+    name: feedmaker-network
+    driver: bridge
 
 volumes:
   sqlite_data:
+    name: feedmaker-sqlite-data
   redis_data:
+    name: feedmaker-redis-data
   static_data:
+    name: feedmaker-static-data
