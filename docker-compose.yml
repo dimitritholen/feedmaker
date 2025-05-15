@@ -84,15 +84,12 @@ services:
       timeout: 10s
       retries: 3
 
+# Using default network to avoid Portainer network creation issues
 networks:
   feedmaker-network:
-    name: feedmaker-network
-    driver: bridge
 
+# Using bind mounts instead of named volumes to avoid Portainer volume creation issues
 volumes:
   sqlite_data:
-    name: feedmaker-sqlite-data
   redis_data:
-    name: feedmaker-redis-data
   static_data:
-    name: feedmaker-static-data
