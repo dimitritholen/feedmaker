@@ -1,28 +1,166 @@
-<h1>Feed maker</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Maker - Generate RSS feeds from any website</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .example-btn {
+            text-align: left;
+            margin-bottom: 0.5rem;
+            width: 100%;
+        }
+        .feed-item {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .feed-item:last-child {
+            border-bottom: none;
+        }
+        .feed-url {
+            background-color: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 0.25rem;
+            border: 1px solid #dee2e6;
+            word-break: break-all;
+        }
+        footer {
+            background-color: #212529;
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+        }
+        footer a {
+            color: #6ea8fe;
+            text-decoration: none;
+        }
+        footer a:hover {
+            color: #9ec5fe;
+            text-decoration: underline;
+        }
+        .spinner-border {
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="display-5 fw-bold">Feed Maker</h1>
+            <p class="lead">Quickly generate an RSS feed from any website</p>
+        </div>
+    </header>
 
-<p>Quickly generate an RSS feed from any website</p>
+    <main class="container">
+        <div class="row">
+            <!-- Left column: Form -->
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="card-title mb-4">Create Your Feed</h2>
 
-<p>By <a href="https://www.kschaul.com/">Kevin Schaul</a></p>
+                        <div class="mb-4">
+                            <h3 class="h5 mb-3">Choose an example:</h3>
+                            <div class="row g-2">
+                                {% for example in examples %}
+                                    <div class="col-md-6">
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary example-btn"
+                                            onClick="showExample({{ example }})">
+                                            {{ example.explanation }}
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
 
-<h2>Make your own feed</h2>
+                        <form id="maker-form">
+                            {% csrf_token %}
 
-<p>Enter your own options, or choose an example:</p>
+                            <div class="mb-3">
+                                <label for="id_url" class="form-label">Website URL</label>
+                                <input type="url" name="url" id="id_url" required class="form-control" placeholder="https://example.com">
+                            </div>
 
-<ul>
-{% for example in examples %}
-    <li><a href="#" onClick="showExample({{ example }})">{{ example.explanation }}</a></li>
-{% endfor %}
-</ul>
+                            <div class="mb-3">
+                                <label for="id_feed_title" class="form-label">Feed Title</label>
+                                <input type="text" name="feed_title" id="id_feed_title" class="form-control" placeholder="My Custom Feed">
+                                <div class="form-text">Leave blank to use the website URL as the title</div>
+                            </div>
 
-<form id="maker-form">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button id="maker-submit">Test</button>
-</form>
+                            <div class="mb-3">
+                                <label for="id_selector_item" class="form-label">CSS Selector for Feed Items</label>
+                                <input type="text" name="selector_item" id="id_selector_item" required class="form-control" placeholder=".article, .post, .item">
+                                <div class="form-text">CSS selector that matches each item in the feed</div>
+                            </div>
 
-<div id="maker-test-url"></div>
-<div id="maker-results"></div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_selector_title" class="form-label">Title Selector</label>
+                                    <input type="text" name="selector_title" id="id_selector_title" class="form-control" placeholder="h2, .title">
+                                </div>
 
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_selector_description" class="form-label">Description Selector</label>
+                                    <input type="text" name="selector_description" id="id_selector_description" class="form-control" placeholder="p, .summary">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_selector_link" class="form-label">Link Selector</label>
+                                <input type="text" name="selector_link" id="id_selector_link" class="form-control" placeholder="a">
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" name="get_items_metadata" id="id_get_items_metadata" class="form-check-input">
+                                    <label for="id_get_items_metadata" class="form-check-label">Include metadata for each item</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input type="checkbox" name="strip_url_params" id="id_strip_url_params" class="form-check-input">
+                                    <label for="id_strip_url_params" class="form-check-label">Strip URL parameters</label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <button id="maker-submit" type="submit" class="btn btn-primary">
+                                    Generate Feed
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right column: Results -->
+            <div class="col-lg-4">
+                <div id="maker-test-url" class="card shadow-sm mb-4 d-none"></div>
+                <div id="maker-results" class="card shadow-sm d-none"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container text-center">
+            <p>By <a href="https://www.kschaul.com/">Kevin Schaul</a></p>
+            <p class="mt-2">A tool to generate RSS feeds from any website</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const form = document.getElementById("maker-form");
     const button = document.getElementById("maker-submit");
@@ -40,6 +178,40 @@
                 }
             } catch (e) { }
         }
+
+        // Show a toast notification
+        const toastContainer = document.createElement('div');
+        toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+        toastContainer.style.zIndex = '11';
+        toastContainer.id = 'toast-container';
+
+        // Remove existing toast container if it exists
+        const existingContainer = document.getElementById('toast-container');
+        if (existingContainer) {
+            existingContainer.remove();
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-success';
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    Example loaded: ${example.explanation}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+
+        toastContainer.appendChild(toast);
+        document.body.appendChild(toastContainer);
+
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+
         populateFeed();
     }
 
@@ -50,29 +222,43 @@
     };
 
     const renderResults = (data) => {
-        let html = '<h2>Test results</h2>';
+        results.classList.remove('d-none');
 
-        html += '<h3>' + data.title + '</h3>\n';
-        html += '<p>' + data.description + '</p>\n';
+        let html = '<div class="card-body">';
+        html += '<h2 class="card-title mb-3">Feed Preview</h2>';
 
-        html += '<ul>\n'
-        for (const item of data.items) {
-            html += '<li>\n';
-            html += '<h4>' + item.title + '</h4>\n';
-            if (item.description) {
-                html += '<p>' + item.description + '</p>\n';
+        html += '<h3 class="h5">' + data.title + '</h3>';
+        html += '<p class="mb-4">' + data.description + '</p>';
+
+        if (data.items.length === 0) {
+            html += '<div class="alert alert-warning">';
+            html += '<p class="mb-0">No items found. Try adjusting your selectors.</p>';
+            html += '</div>';
+        } else {
+            for (const item of data.items) {
+                html += '<div class="feed-item">';
+                html += '<h4 class="h6 fw-bold">' + (item.title || 'No title') + '</h4>';
+
+                if (item.description) {
+                    html += '<p class="mb-2">' + item.description + '</p>';
+                }
+
+                if (item.link) {
+                    html += '<a href="' + item.link + '" target="_blank" class="btn btn-sm btn-outline-primary">';
+                    html += 'View Item</a>';
+                }
+
+                html += '</div>';
             }
-            if (item.link) {
-                html += '<a>' + item.link + '</a>\n';
-            }
-            html += '</li>\n';
         }
-        html += '</ul>\n'
+
+        html += '</div>';
         results.innerHTML = html;
     };
 
     const populateFeed = () => {
-        results.innerHTML = 'Loading ...';
+        results.classList.remove('d-none');
+        results.innerHTML = '<div class="card-body text-center py-5"><div class="spinner-border text-primary" role="status"></div><span>Loading...</span></div>';
 
         const searchParams = getSearchParams();
         searchParams.set('format', 'json');
@@ -80,10 +266,20 @@
         const url = 'feed/?' + searchParams.toString();
         fetch(url)
             .then((response) => response.json())
-            .then((data) => renderResults(data));
+            .then((data) => renderResults(data))
+            .catch(error => {
+                results.innerHTML = '<div class="card-body"><div class="alert alert-danger"><p class="mb-0">Error loading feed. Please check your selectors and try again.</p></div></div>';
+            });
 
         const feedUrl = '{{ absolute_url }}feed?' + getSearchParams();
-        testUrl.innerHTML = '<a href="' + feedUrl + '" target="_blank">' + feedUrl + '</a>\n';
+        testUrl.classList.remove('d-none');
+        testUrl.innerHTML = '<div class="card-body">' +
+                           '<h2 class="card-title mb-3">Your RSS Feed URL</h2>' +
+                           '<div class="feed-url mb-2">' +
+                           '<a href="' + feedUrl + '" target="_blank">' +
+                           feedUrl + '</a></div>' +
+                           '<p class="form-text">Use this URL in your favorite RSS reader</p>' +
+                           '</div>';
     }
 
     button.addEventListener('click', (e) => {
@@ -91,3 +287,5 @@
         populateFeed();
     });
 </script>
+</body>
+</html>

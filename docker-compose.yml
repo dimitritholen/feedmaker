@@ -23,7 +23,7 @@ services:
       bash -c "mkdir -p /code/data &&
                chmod 777 /code/data &&
                python manage.py migrate &&
-               python manage.py collectstatic --noinput || echo 'Skipping collectstatic' &&
+               python manage.py collectstatic --noinput --clear &&
                gunicorn --bind :8000 --workers 2 --access-logfile - --preload feedmaker.wsgi"
 
   redis:

@@ -45,6 +45,7 @@ except Exception as e:
 # Static files configuration
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATICFILES_DIRS = []
 
 # Ensure directories exist
 os.makedirs(os.path.join(BASE_DIR, "data"), exist_ok=True)
