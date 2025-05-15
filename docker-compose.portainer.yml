@@ -9,7 +9,8 @@ services:
     expose:
       - "8001"  # Changed from 8000 to 8001
     volumes:
-      - /storage/feedmaker:/code
+      # Instead of mounting the directory, we'll use the image's built-in code
+      # and just mount the data and static directories for persistence
       - /storage/feedmaker/data:/code/data
       - /storage/feedmaker/static:/code/static
     environment:

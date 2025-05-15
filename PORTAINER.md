@@ -23,14 +23,22 @@ Before deploying the stack, you need to create the necessary directories for dat
 
 ```bash
 # Create directories for data persistence
-mkdir -p data static redis-data
-chmod 777 data static redis-data
+mkdir -p /storage/feedmaker/data /storage/feedmaker/static /storage/feedmaker/redis-data
+chmod 777 /storage/feedmaker/data /storage/feedmaker/static /storage/feedmaker/redis-data
 
 # Create directories for nginx if they don't exist
-mkdir -p nginx/certbot/conf nginx/certbot/www
+mkdir -p /storage/feedmaker/nginx/conf.d /storage/feedmaker/nginx/certbot/conf /storage/feedmaker/nginx/certbot/www
 ```
 
 This approach uses bind mounts instead of named volumes, which works better with Portainer CE 2.27.6 LTS.
+
+#### Important Note About Code Deployment
+
+The application code is built into the Docker image during the build process. You don't need to mount your local code directory into the container. This ensures that:
+
+1. The container has access to all the necessary code files
+2. The application runs consistently across different environments
+3. You avoid file permission issues between the host and container
 
 ### 3. Deploy with Portainer
 
@@ -176,6 +184,16 @@ This error occurs when there's a mismatch between the type of the source and tar
 2. In our updated configuration, we've:
    - Removed the nginx.conf mount to use the default one in the container
    - This avoids the need to create and maintain a custom nginx.conf file
+
+##### Error: "python: can't open file '/code/manage.py': [Errno 2] No such file or directory"
+
+This error occurs when the application code is not properly available in the container. To fix this:
+
+1. Make sure the application code is properly built into the Docker image
+2. In our updated configuration, we've:
+   - Removed the volume mount that was trying to mount the host directory to /code
+   - This allows the container to use the code that was built into the image during the build process
+   - We still mount the data and static directories for persistence
 
 You can run the `check_port.sh` script to identify what's using ports on your system:
 
