@@ -78,9 +78,12 @@ The following environment variables can be configured in Portainer:
 
 Once deployed, the application will be accessible at:
 
-- `http://your-server-ip` (or the domain you configured)
+- `http://your-server-ip:8080` (or the domain you configured with port 8080)
+- `https://your-server-ip:8443` (for HTTPS when SSL is configured)
 
-The application is configured to use port 80 for HTTP and port 443 for HTTPS (when SSL is configured).
+The application is configured to use non-standard ports to avoid conflicts:
+- Port 8080 for HTTP (instead of standard port 80)
+- Port 8443 for HTTPS (instead of standard port 443)
 
 ### 6. Data Storage
 
@@ -136,9 +139,18 @@ This error occurs when port 8000 is already in use on your host machine. To fix 
 3. In our updated configuration, we've:
    - Changed the web service to use port 8001 internally instead of 8000
    - Updated the nginx configuration to proxy to port 8001
-   - Changed the nginx service to use port 80 for external access
 
-You can run the `check_port.sh` script to identify what's using port 8000 on your system:
+##### Error: "Bind for 0.0.0.0:80 failed: port is already allocated"
+
+This error occurs when port 80 is already in use on your host machine, typically by another web server. To fix this:
+
+1. Change the port mapping in the docker-compose.yml file to use a different port
+2. Or stop the service that's currently using port 80
+3. In our updated configuration, we've:
+   - Changed the nginx service to use port 8080 for HTTP instead of port 80
+   - Changed the nginx service to use port 8443 for HTTPS instead of port 443
+
+You can run the `check_port.sh` script to identify what's using ports on your system:
 
 ```bash
 chmod +x check_port.sh

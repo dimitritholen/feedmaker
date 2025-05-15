@@ -39,8 +39,8 @@ services:
     container_name: feedmaker-nginx
     image: nginx:1.25-alpine
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"  # Changed from 80:80 to 8080:80 to avoid conflicts
+      - "8443:443"  # Changed from 443:443 to 8443:443 to avoid conflicts
     volumes:
       - /storage/feedmaker/nginx/conf.d:/etc/nginx/conf.d
       - /storage/feedmaker/nginx/nginx.conf:/etc/nginx/nginx.conf
