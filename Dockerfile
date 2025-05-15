@@ -5,9 +5,12 @@ FROM python:${PYTHON_VERSION}
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN mkdir -p /code
+RUN mkdir -p /code/data /code/static
 
 WORKDIR /code
+
+# Set permissions for SQLite database directory
+RUN chmod 777 /code/data
 
 COPY requirements.txt /tmp/requirements.txt
 
