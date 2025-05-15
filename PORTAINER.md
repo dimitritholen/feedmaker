@@ -78,12 +78,12 @@ The following environment variables can be configured in Portainer:
 
 Once deployed, the application will be accessible at:
 
-- `http://your-server-ip:9090` (or the domain you configured with port 9090)
-- `https://your-server-ip:9444` (for HTTPS when SSL is configured)
+- `http://your-server-ip:7080` (or the domain you configured with port 7080)
+- `https://your-server-ip:7443` (for HTTPS when SSL is configured)
 
 The application is configured to use very uncommon ports to avoid conflicts:
-- Port 9090 for HTTP (instead of standard port 80)
-- Port 9444 for HTTPS (instead of standard port 443)
+- Port 7080 for HTTP (instead of standard port 80)
+- Port 7443 for HTTPS (instead of standard port 443)
 
 These ports were chosen to minimize the chance of conflicts with other services.
 
@@ -149,8 +149,8 @@ This error occurs when port 80 is already in use on your host machine, typically
 1. Change the port mapping in the docker-compose.yml file to use a different port
 2. Or stop the service that's currently using port 80
 3. In our updated configuration, we've:
-   - Changed the nginx service to use port 9090 for HTTP instead of port 80
-   - Changed the nginx service to use port 9444 for HTTPS instead of port 443
+   - Changed the nginx service to use port 7080 for HTTP instead of port 80
+   - Changed the nginx service to use port 7443 for HTTPS instead of port 443
 
 ##### Error: "Bind for 0.0.0.0:9443 failed: port is already allocated"
 
@@ -158,7 +158,15 @@ This error occurs because port 9443 is already in use by Portainer itself. To fi
 
 1. Change the port mapping in the docker-compose.yml file to use a different port
 2. In our updated configuration, we've:
-   - Changed the nginx service to use port 9444 for HTTPS instead of port 9443
+   - Changed the nginx service to use port 7443 for HTTPS instead of port 9443
+
+##### Error: "Bind for 0.0.0.0:9090 failed: port is already allocated"
+
+This error occurs because port 9090 is already in use on your host machine. To fix this:
+
+1. Change the port mapping in the docker-compose.yml file to use a different port
+2. In our updated configuration, we've:
+   - Changed the nginx service to use port 7080 for HTTP instead of port 9090
 
 You can run the `check_port.sh` script to identify what's using ports on your system:
 
@@ -181,7 +189,7 @@ All services include health checks to ensure they're running properly:
 
 - **Web**: Checks if the application responds on port 8001
 - **Redis**: Checks if Redis responds to ping
-- **Nginx**: Checks if the web server responds internally on port 80 (mapped to external port 9090)
+- **Nginx**: Checks if the web server responds internally on port 80 (mapped to external port 7080)
 
 ### Network Configuration
 
