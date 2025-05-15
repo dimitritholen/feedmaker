@@ -43,7 +43,7 @@ services:
       - "7443:443"  # Using a very uncommon port (7443) to avoid conflicts
     volumes:
       - /storage/feedmaker/nginx/conf.d:/etc/nginx/conf.d
-      - /storage/feedmaker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      # Removed the nginx.conf mount to use the default one in the container
       - /storage/feedmaker/static:/var/www/static
       - /storage/feedmaker/nginx/certbot/conf:/etc/letsencrypt
       - /storage/feedmaker/nginx/certbot/www:/var/www/certbot

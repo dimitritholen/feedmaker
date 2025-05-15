@@ -168,6 +168,15 @@ This error occurs because port 9090 is already in use on your host machine. To f
 2. In our updated configuration, we've:
    - Changed the nginx service to use port 7080 for HTTP instead of port 9090
 
+##### Error: "failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: error mounting..."
+
+This error occurs when there's a mismatch between the type of the source and target in a volume mount (e.g., trying to mount a directory onto a file or vice versa). To fix this:
+
+1. Check if the source path exists and is of the expected type (file or directory)
+2. In our updated configuration, we've:
+   - Removed the nginx.conf mount to use the default one in the container
+   - This avoids the need to create and maintain a custom nginx.conf file
+
 You can run the `check_port.sh` script to identify what's using ports on your system:
 
 ```bash
