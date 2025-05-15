@@ -28,12 +28,12 @@ RUN set -ex && \
 # Copy application code
 COPY . /code/
 
-# Expose port
-EXPOSE 8000
+# Expose port (using 8001 instead of 8000 to avoid conflicts)
+EXPOSE 8001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8000/ || exit 1
+    CMD curl -f http://localhost:8001/ || exit 1
 
 # Run application
-CMD ["gunicorn", "--bind", ":8000", "--workers", "1", "--access-logfile", "-", "--preload", "feedmaker.wsgi"]
+CMD ["gunicorn", "--bind", ":8001", "--workers", "1", "--access-logfile", "-", "--preload", "feedmaker.wsgi"]

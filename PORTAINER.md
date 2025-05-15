@@ -80,6 +80,8 @@ Once deployed, the application will be accessible at:
 
 - `http://your-server-ip` (or the domain you configured)
 
+The application is configured to use port 80 for HTTP and port 443 for HTTPS (when SSL is configured).
+
 ### 6. Data Storage
 
 The application uses the following directories for data persistence:
@@ -124,6 +126,24 @@ This error occurs when a container with the same name already exists. To fix thi
 
 1. Remove the existing container with the same name
 2. Or modify the container names in the docker-compose.yml file
+
+##### Error: "Bind for 0.0.0.0:8000 failed: port is already allocated"
+
+This error occurs when port 8000 is already in use on your host machine. To fix this:
+
+1. Change the port mapping in the docker-compose.yml file to use a different port
+2. Or stop the service that's currently using port 8000
+3. In our updated configuration, we've:
+   - Changed the web service to use port 8001 internally instead of 8000
+   - Updated the nginx configuration to proxy to port 8001
+   - Changed the nginx service to use port 80 for external access
+
+You can run the `check_port.sh` script to identify what's using port 8000 on your system:
+
+```bash
+chmod +x check_port.sh
+./check_port.sh
+```
 
 ## Additional Information
 
